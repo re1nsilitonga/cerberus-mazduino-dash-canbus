@@ -24,6 +24,8 @@ enum DataSource {
   DATA_SOURCE_RPM,
   DATA_SOURCE_FP,
   DATA_SOURCE_VSS,
+  DATA_SOURCE_GEAR,        /* Gear position (0=N, 1-6) */
+  DATA_SOURCE_OIL,         /* Oil pressure kPa gauge   */
   DATA_SOURCE_COUNT
 };
 

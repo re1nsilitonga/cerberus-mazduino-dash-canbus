@@ -95,6 +95,10 @@ float getDataValue(uint8_t dataSource) {
       return (float)fp;
     case DATA_SOURCE_VSS:
       return (float)vss;
+    case DATA_SOURCE_GEAR:
+      return (float)gear;
+    case DATA_SOURCE_OIL:
+      return oil_pressure;
     default:
       return 0.0;
   }
@@ -136,6 +140,8 @@ const char* getDataSourceName(uint8_t dataSource) {
     case DATA_SOURCE_RPM: return "RPM";
     case DATA_SOURCE_FP: return "FP";
     case DATA_SOURCE_VSS: return "VSS";
+    case DATA_SOURCE_GEAR: return "Gear";
+    case DATA_SOURCE_OIL: return "Oil";
     default: return "Unknown";
   }
 }

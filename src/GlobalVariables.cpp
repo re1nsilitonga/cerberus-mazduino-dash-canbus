@@ -11,6 +11,8 @@ uint8_t iat = 0, clt = 0;
 uint8_t refreshRate = 0;
 unsigned int rpm = 0, lastRpm, vss = 0;
 int mapData, tps, adv, fp, triggerError = 0;
+int gear = 0;
+float oil_pressure = 0.0;
 float bat = 0.0, afrConv = 0.0;
 bool syncStatus, fan, ase, wue, rev, launch, airCon, dfco;
 

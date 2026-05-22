@@ -9,13 +9,14 @@ void setupCAN() {
   CAN0.setCANPins(GPIO_NUM_17, GPIO_NUM_16); // RX, TX
   CAN0.begin(getCanSpeed());                // Use configurable CAN speed
   CAN0.watchFor(0x360);                      // RPM, MAP, TPS
-  CAN0.watchFor(0x361);                      // Fuel Pressure
+  CAN0.watchFor(0x361);                      // Fuel Pressure, Oil Pressure
   CAN0.watchFor(0x362);                      // Ignition Angle (Leading)
   CAN0.watchFor(0x368);                      // AFR 01
   CAN0.watchFor(0x369);                      // Trigger System Error Count
   CAN0.watchFor(0x370);                      // VSS
   CAN0.watchFor(0x372);                      // Voltage
-  CAN0.watchFor(0x3E0);                      // CLT, IAT
+  CAN0.watchFor(0x3E0);                      // ECT (Coolant), IAT
+  CAN0.watchFor(0x3E2);                      // Gear Position
   CAN0.watchFor(0x3E4);                      // Indicator
 
   isCANMode = true;  // Set communication mode indicator
@@ -52,8 +53,11 @@ void handleCANCommunication() {
           break;
         }
         case 0x361: {
-          uint16_t fuel_pressure = (can_message.data.byte[0] << 8) | can_message.data.byte[1];
-          fp = fuel_pressure / 10 - 101.3;
+          /* Haltech Elite/Nexus: bytes[0-1]=Fuel Pressure, bytes[2-3]=Oil Pressure (10x kPa absolute) */
+          uint16_t fuel_raw = (can_message.data.byte[0] << 8) | can_message.data.byte[1];
+          uint16_t oil_raw  = (can_message.data.byte[2] << 8) | can_message.data.byte[3];
+          fp = fuel_raw / 10.0 - 101.325;   /* kPa gauge */
+          oil_pressure = oil_raw / 10.0 - 101.325; /* kPa gauge */
           break;
         }
         case 0x368: {
@@ -84,6 +88,11 @@ void handleCANCommunication() {
           float iat_k = iat_raw / 10.0;
           clt = clt_k - 273.15;
           iat = iat_k - 273.15;
+          break;
+        }
+        case 0x3E2: {
+          /* Haltech: byte[0] = calculated gear (0=N, 1-6=gears) */
+          gear = can_message.data.byte[0];
           break;
         }
         case 0x3E4: {

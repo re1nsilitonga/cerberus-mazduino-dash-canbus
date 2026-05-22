@@ -8,6 +8,8 @@ extern uint8_t iat, clt;
 extern uint8_t refreshRate;
 extern unsigned int rpm, lastRpm, vss;
 extern int mapData, tps, adv, fp, triggerError;
+extern int gear;           /* Gear position: 0=N, 1-6=gear (CAN 0x3E2 byte[0]) */
+extern float oil_pressure; /* Oil pressure in kPa gauge (CAN 0x361 bytes[2-3]) */
 extern float bat, afrConv;
 extern bool syncStatus, fan, ase, wue, rev, launch, airCon, dfco;
 
