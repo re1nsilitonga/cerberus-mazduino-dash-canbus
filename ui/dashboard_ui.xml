@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Cerberus Dashboard UI — LVGL Pro XML
+  ======================================
+  Resolution  : 480 × 320 px
+  LVGL version: 9.x
+  Theme       : Dark racing / Cerberus red
+  Source      : ui/dashboard_ui.c
+
+  Layout overview:
+  ┌──────────────────────────────────────────────────────────┐
+  │  ⚠ CERBERUS                                   [ SIM ]   │ header 36px
+  ├─────────────────────────┬────────────────────────────────┤
+  │                         │                                │
+  │   RPM arc (180×180)     │    G E A R                     │ 186px
+  │       [ 3500 ]          │       [ 3 ]                    │
+  │        [ RPM ]          │                                │
+  │                         │                                │
+  ├──────────────────────────────────────────────────────────┤  accent line
+  │  CLT °C │ OIL kPa │ TPS % │  IAT °C │  MAP kPa          │ 90px
+  │   85    │   280   │  35   │   30    │   95               │
+  └──────────────────────────────────────────────────────────┘
+
+  Color palette:
+    C_BG        #0C0C11   — screen background
+    C_HEADER    #131318   — header background
+    C_PANEL     #16161E   — panel background
+    C_BORDER    #282835   — panel border / divider
+    C_ACCENT    #E01A0A   — Cerberus red
+    C_DIM       #70707E   — dim grey (labels / units)
+    C_BRIGHT    #F0F0F2   — near-white (values)
+    C_ARC_BG    #232330   — arc track background
+    C_ARC_FG    #E01A0A   — arc indicator (normal)
+    C_WARN      #FF8800   — warning orange
+    C_DANGER    #FF2020   — critical red
+    C_SIM       #FFAA00   — SIM badge amber
+    C_GEAR_LOW  #28E028   — gear 1-2 green
+    C_GEAR_MID  #F0D010   — gear 3-4 yellow
+    C_GEAR_HIGH #FF5500   — gear 5-6 orange
+
+  Dynamic widget IDs (for code-side update mapping):
+    arc_rpm, lbl_rpm_val, lbl_gear_val, lbl_sim_badge
+    lbl_clt_val, lbl_oil_val, lbl_tps_val, lbl_iat_val, lbl_map_val
+-->
+
+<ui lvgl_version="9" resolution_w="480" resolution_h="320">
+
+  <screen name="screen_dashboard">
+
+    <!-- Screen background -->
+    <lv_obj name="screen_root" x="0" y="0" w="480" h="320"
+            bg_color="#0C0C11" bg_opa="255"
+            border_width="0" radius="0" pad_all="0"
+            scrollbar_mode="off" scrollable="false"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         HEADER  (480 × 36 px)
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <lv_obj name="header" x="0" y="0" w="480" h="36"
+            bg_color="#131318" bg_opa="255"
+            border_width="0" radius="0" pad_all="0"
+            scrollbar_mode="off" scrollable="false">
+
+      <!-- Red accent line at bottom of header (3 px) -->
+      <lv_obj name="accent_line" x="0" y="33" w="480" h="3"
+              bg_color="#E01A0A" bg_opa="255"
+              border_width="0" radius="0"/>
+
+      <!-- Title: ⚠ CERBERUS — Cerberus red, Montserrat 16 -->
+      <lv_label name="lbl_title"
+                x="10" y="9"
+                text="⚠ CERBERUS"
+                text_color="#E01A0A"
+                text_font="lv_font_montserrat_16"/>
+
+      <!-- SIM badge — amber, right-aligned, hidden by default -->
+      <lv_label name="lbl_sim_badge"
+                align="RIGHT_MID" align_ofs_x="-10" align_ofs_y="0"
+                text="[ SIM ]"
+                text_color="#FFAA00"
+                text_font="lv_font_montserrat_14"
+                hidden="true"/>
+
+    </lv_obj><!-- /header -->
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         VERTICAL DIVIDER  (RPM panel | GEAR panel)
+         x=238, y=38, 2 × 186 px
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <lv_obj name="vdiv" x="238" y="38" w="2" h="186"
+            bg_color="#282835" bg_opa="255"
+            border_width="0" radius="0"/>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         RPM PANEL  (left, 238 × 186 px)
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <lv_obj name="panel_rpm" x="0" y="38" w="238" h="186"
+            bg_color="#16161E" bg_opa="255"
+            border_color="#282835" border_width="1"
+            radius="4" pad_all="0"
+            scrollbar_mode="off" scrollable="false">
+
+      <!--
+        RPM arc gauge
+          size       : 180 × 180 px, centered in panel (offset -4 x)
+          rotation   : 135°  → arc starts from bottom-left
+          bg_angles  : 0 → 270  → 270° sweep
+          range      : 0 – 7000 RPM
+          track color: #232330 (dark), width 13 px
+          fill color : #E01A0A (Cerberus red), width 13 px
+          knob       : hidden (transparent)
+          clickable  : false
+      -->
+      <lv_arc name="arc_rpm"
+              w="180" h="180"
+              align="CENTER" align_ofs_x="-4" align_ofs_y="0"
+              rotation="135"
+              bg_start_angle="0" bg_end_angle="270"
+              range_min="0" range_max="7000"
+              value="0"
+              clickable="false"
+              knob_opa="0"
+              bg_opa="0">
+        <!-- Main part (track) -->
+        <style part="main"
+               arc_color="#232330" arc_width="13"/>
+        <!-- Indicator part (fill) -->
+        <style part="indicator"
+               arc_color="#E01A0A" arc_width="13"/>
+      </lv_arc>
+
+      <!-- RPM numeric value — Montserrat 32, near-white -->
+      <lv_label name="lbl_rpm_val"
+                align="CENTER" align_ofs_x="-4" align_ofs_y="-10"
+                text="0"
+                text_color="#F0F0F2"
+                text_font="lv_font_montserrat_32"/>
+
+      <!-- "RPM" unit — Montserrat 12, dim grey -->
+      <lv_label name="lbl_rpm_unit"
+                align="CENTER" align_ofs_x="-4" align_ofs_y="22"
+                text="RPM"
+                text_color="#70707E"
+                text_font="lv_font_montserrat_12"/>
+
+    </lv_obj><!-- /panel_rpm -->
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         GEAR PANEL  (right, 238 × 186 px)
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <lv_obj name="panel_gear" x="242" y="38" w="238" h="186"
+            bg_color="#16161E" bg_opa="255"
+            border_color="#282835" border_width="1"
+            radius="4" pad_all="0"
+            scrollbar_mode="off" scrollable="false">
+
+      <!-- "GEAR" title — Montserrat 16, dim grey -->
+      <lv_label name="lbl_gear_title"
+                align="TOP_MID" align_ofs_x="0" align_ofs_y="14"
+                text="GEAR"
+                text_color="#70707E"
+                text_font="lv_font_montserrat_16"/>
+
+      <!--
+        Gear number — Montserrat 48 (largest font)
+        Default "N" (neutral) → green
+        Color changes at runtime:
+          N        → #70707E  (dim)
+          1 – 2    → #28E028  (green)
+          3 – 4    → #F0D010  (yellow)
+          5 – 6    → #FF5500  (orange)
+      -->
+      <lv_label name="lbl_gear_val"
+                align="CENTER" align_ofs_x="0" align_ofs_y="10"
+                text="N"
+                text_color="#28E028"
+                text_font="lv_font_montserrat_48"/>
+
+    </lv_obj><!-- /panel_gear -->
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         HORIZONTAL DIVIDER  (main area | bottom strip)
+         y=226, 480 × 2 px, Cerberus red
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <lv_obj name="hdiv" x="0" y="226" w="480" h="2"
+            bg_color="#E01A0A" bg_opa="255"
+            border_width="0" radius="0"/>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         BOTTOM SENSOR STRIP  (480 × 90 px)
+         Five equal panels: CLT | OIL | TPS | IAT | MAP (each 96 × 90 px)
+         Each panel layout:
+           TOP_MID  (+8 px)  → sensor name, Montserrat 12, dim grey
+           CENTER   (+4 px)  → value,       Montserrat 24, bright white
+           BOTTOM_MID (-6 px) → unit,       Montserrat 12, dim grey
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <lv_obj name="strip_sensors" x="0" y="230" w="480" h="90"
+            bg_color="#0C0C11" bg_opa="255"
+            border_width="0" radius="0" pad_all="0"
+            scrollbar_mode="off" scrollable="false">
+
+      <!-- ── CLT (Coolant Temperature, °C) ── x=0 ── -->
+      <lv_obj name="panel_clt" x="0" y="0" w="96" h="90"
+              bg_color="#16161E" bg_opa="255"
+              border_color="#282835" border_width="1"
+              radius="0" pad_all="0">
+        <lv_label name="lbl_clt_title"
+                  align="TOP_MID" align_ofs_x="0" align_ofs_y="8"
+                  text="CLT"
+                  text_color="#70707E" text_font="lv_font_montserrat_12"/>
+        <!--
+          lbl_clt_val: color changes at runtime
+            > 105 °C  → #FF2020 (danger)
+            > 95 °C   → #FF8800 (warn)
+            normal    → #F0F0F2 (bright)
+        -->
+        <lv_label name="lbl_clt_val"
+                  align="CENTER" align_ofs_x="0" align_ofs_y="4"
+                  text="--"
+                  text_color="#F0F0F2" text_font="lv_font_montserrat_24"/>
+        <lv_label name="lbl_clt_unit"
+                  align="BOTTOM_MID" align_ofs_x="0" align_ofs_y="-6"
+                  text="°C"
+                  text_color="#70707E" text_font="lv_font_montserrat_12"/>
+      </lv_obj>
+
+      <!-- ── OIL (Oil Pressure, kPa) ── x=96 ── -->
+      <lv_obj name="panel_oil" x="96" y="0" w="96" h="90"
+              bg_color="#16161E" bg_opa="255"
+              border_color="#282835" border_width="1"
+              radius="0" pad_all="0">
+        <lv_label name="lbl_oil_title"
+                  align="TOP_MID" align_ofs_x="0" align_ofs_y="8"
+                  text="OIL"
+                  text_color="#70707E" text_font="lv_font_montserrat_12"/>
+        <!--
+          lbl_oil_val: color changes at runtime (when RPM > 500)
+            < 100 kPa → #FF2020 (danger)
+            < 150 kPa → #FF8800 (warn)
+            normal    → #F0F0F2
+        -->
+        <lv_label name="lbl_oil_val"
+                  align="CENTER" align_ofs_x="0" align_ofs_y="4"
+                  text="--"
+                  text_color="#F0F0F2" text_font="lv_font_montserrat_24"/>
+        <lv_label name="lbl_oil_unit"
+                  align="BOTTOM_MID" align_ofs_x="0" align_ofs_y="-6"
+                  text="kPa"
+                  text_color="#70707E" text_font="lv_font_montserrat_12"/>
+      </lv_obj>
+
+      <!-- ── TPS (Throttle Position Sensor, %) ── x=192 ── -->
+      <lv_obj name="panel_tps" x="192" y="0" w="96" h="90"
+              bg_color="#16161E" bg_opa="255"
+              border_color="#282835" border_width="1"
+              radius="0" pad_all="0">
+        <lv_label name="lbl_tps_title"
+                  align="TOP_MID" align_ofs_x="0" align_ofs_y="8"
+                  text="TPS"
+                  text_color="#70707E" text_font="lv_font_montserrat_12"/>
+        <lv_label name="lbl_tps_val"
+                  align="CENTER" align_ofs_x="0" align_ofs_y="4"
+                  text="--"
+                  text_color="#F0F0F2" text_font="lv_font_montserrat_24"/>
+        <lv_label name="lbl_tps_unit"
+                  align="BOTTOM_MID" align_ofs_x="0" align_ofs_y="-6"
+                  text="%"
+                  text_color="#70707E" text_font="lv_font_montserrat_12"/>
+      </lv_obj>
+
+      <!-- ── IAT (Intake Air Temperature, °C) ── x=288 ── -->
+      <lv_obj name="panel_iat" x="288" y="0" w="96" h="90"
+              bg_color="#16161E" bg_opa="255"
+              border_color="#282835" border_width="1"
+              radius="0" pad_all="0">
+        <lv_label name="lbl_iat_title"
+                  align="TOP_MID" align_ofs_x="0" align_ofs_y="8"
+                  text="IAT"
+                  text_color="#70707E" text_font="lv_font_montserrat_12"/>
+        <!--
+          lbl_iat_val: color changes at runtime
+            > 65 °C → #FF8800 (warn)
+            normal  → #F0F0F2
+        -->
+        <lv_label name="lbl_iat_val"
+                  align="CENTER" align_ofs_x="0" align_ofs_y="4"
+                  text="--"
+                  text_color="#F0F0F2" text_font="lv_font_montserrat_24"/>
+        <lv_label name="lbl_iat_unit"
+                  align="BOTTOM_MID" align_ofs_x="0" align_ofs_y="-6"
+                  text="°C"
+                  text_color="#70707E" text_font="lv_font_montserrat_12"/>
+      </lv_obj>
+
+      <!-- ── MAP (Manifold Absolute Pressure, kPa) ── x=384 ── -->
+      <lv_obj name="panel_map" x="384" y="0" w="96" h="90"
+              bg_color="#16161E" bg_opa="255"
+              border_color="#282835" border_width="1"
+              radius="0" pad_all="0">
+        <lv_label name="lbl_map_title"
+                  align="TOP_MID" align_ofs_x="0" align_ofs_y="8"
+                  text="MAP"
+                  text_color="#70707E" text_font="lv_font_montserrat_12"/>
+        <lv_label name="lbl_map_val"
+                  align="CENTER" align_ofs_x="0" align_ofs_y="4"
+                  text="--"
+                  text_color="#F0F0F2" text_font="lv_font_montserrat_24"/>
+        <lv_label name="lbl_map_unit"
+                  align="BOTTOM_MID" align_ofs_x="0" align_ofs_y="-6"
+                  text="kPa"
+                  text_color="#70707E" text_font="lv_font_montserrat_12"/>
+      </lv_obj>
+
+    </lv_obj><!-- /strip_sensors -->
+
+  </screen>
+</ui>
