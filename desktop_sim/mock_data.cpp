@@ -25,6 +25,13 @@ static float tick     = 0.0f;   /* naik 0.05 per frame (~60fps) */
 
 static float lerp(float a, float b, float t) { return a + (b - a) * t; }
 
+/* speed_kmh dari RPM + gear — faktor tipikal Mazda B6 dengan final drive 4.1 */
+static const float k_gear_factor[7] = {0.0f, 0.009f, 0.016f, 0.023f, 0.031f, 0.040f, 0.048f};
+static void calc_speed(void) {
+    int g = g_dash_data.gear;
+    g_dash_data.speed_kmh = (g >= 1 && g <= 6) ? g_dash_data.rpm * k_gear_factor[g] : 0.0f;
+}
+
 /* Clamp float ke range [lo, hi] */
 static float fclamp(float v, float lo, float hi) {
     return v < lo ? lo : (v > hi ? hi : v);
@@ -65,6 +72,7 @@ static void update_sweep(void) {
 
     /* Gear: berdasarkan RPM */
     g_dash_data.gear = rpm_to_gear(g_dash_data.rpm);
+    calc_speed();
 }
 
 static void update_idle(void) {
@@ -84,7 +92,8 @@ static void update_idle(void) {
 
     /* IAT idle: rendah, naik pelan karena mesin panas */
     g_dash_data.iat  = 32.0f + 6.0f * sinf(tick * 0.06f);
-    g_dash_data.gear = 0;  /* Neutral saat idle */
+    g_dash_data.gear = 0;
+    calc_speed();
 }
 
 static void update_driving(void) {
@@ -110,6 +119,7 @@ static void update_driving(void) {
     /* IAT: lebih panas saat jalan, 38-52°C */
     g_dash_data.iat  = 42.0f + 10.0f * sinf(tick * 0.07f) + 2.0f * sinf(tick * 1.1f);
     g_dash_data.gear = rpm_to_gear(g_dash_data.rpm);
+    calc_speed();
 }
 
 static void update_redline(void) {
@@ -127,7 +137,8 @@ static void update_redline(void) {
 
     /* IAT panas: 55-70°C */
     g_dash_data.iat  = 60.0f + 10.0f * sinf(tick * 0.1f) + 3.0f * sinf(tick * 1.5f);
-    g_dash_data.gear = 5 + (int)(fabs(sinf(tick * 0.8f)) > 0.6f ? 1 : 0); /* 5 atau 6 */
+    g_dash_data.gear = 5 + (int)(fabs(sinf(tick * 0.8f)) > 0.6f ? 1 : 0);
+    calc_speed();
 }
 
 /* ── Public API ───────────────────────────────────────────────────────────── */

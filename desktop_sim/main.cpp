@@ -17,6 +17,7 @@
 #include "SDL2/SDL.h"
 #include "mock_data.h"      /* C++ — fungsi dengan C++ linkage */
 #include "dashboard_ui.h"   /* sudah punya ifdef __cplusplus extern "C" guard */
+#include "cerberus_logo_argb.h"
 
 /* ── Display resolution (must match TFT) ──────────────────────────────────── */
 #define DISPLAY_WIDTH  480
@@ -73,6 +74,29 @@ int main(int /*argc*/, char ** /*argv*/)
     if (!g_texture) {
         SDL_Log("SDL_CreateTexture failed: %s", SDL_GetError());
         return 1;
+    }
+
+    /* --- Splash screen: yellow background + Cerberus logo centered --- */
+    {
+        SDL_SetRenderDrawColor(g_renderer, 0xFF, 0xDA, 0x19, 0xFF);
+        SDL_RenderClear(g_renderer);
+
+        SDL_Texture *logoTex = SDL_CreateTexture(g_renderer,
+            SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC,
+            cerberus_logo_argb_w, cerberus_logo_argb_h);
+        SDL_UpdateTexture(logoTex, nullptr, cerberus_logo_argb,
+                          cerberus_logo_argb_w * 4);
+
+        SDL_Rect dst;
+        dst.w = cerberus_logo_argb_w;
+        dst.h = cerberus_logo_argb_h;
+        dst.x = (DISPLAY_WIDTH  - dst.w) / 2;
+        dst.y = (DISPLAY_HEIGHT - dst.h) / 2;
+        SDL_RenderCopy(g_renderer, logoTex, nullptr, &dst);
+        SDL_RenderPresent(g_renderer);
+        SDL_DestroyTexture(logoTex);
+
+        SDL_Delay(2000);
     }
 
     /* --- LVGL init --- */

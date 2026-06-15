@@ -22,6 +22,12 @@
 #include "Simulator.h"
 #endif
 
+// LVGL dashboard UI
+#include "LvglDisplay.h"
+#include "mock_data.h"
+#include "dashboard_ui.h"
+#include "cerberus_logo_565.h"
+
 // Web server
 WebServer server(80);
 
@@ -211,8 +217,24 @@ void setup()
   
   // Initialize display
   setupDisplay();
-  drawSplashScreenWithImage();
   display.fillScreen(TFT_BLACK);
+
+  // ── Splash screen: yellow background + Cerberus logo centered ──────────────
+  {
+    uint16_t splashBg = display.color565(0xFF, 0xDA, 0x19);
+    display.fillScreen(splashBg);
+    int x = (display.width()  - CERBERUS_LOGO565_W) / 2;
+    int y = (display.height() - CERBERUS_LOGO565_H) / 2;
+    display.setSwapBytes(true);  // Enable byte swapping for RGB565 color correction
+    display.pushImage(x, y, CERBERUS_LOGO565_W, CERBERUS_LOGO565_H, cerberus_logo565);
+    display.setSwapBytes(false); // Restore default before LVGL takes over
+    delay(2000);
+  }
+  display.fillScreen(TFT_BLACK);
+
+  // Initialize LVGL dashboard UI
+  lvglDisplayInit();
+  dashboard_ui_init();
   
   Serial.begin(UART_BAUD);
   commMode = EEPROM.read(1);
@@ -279,7 +301,6 @@ void setup()
 
   EEPROM.write(0, 1);
   delay(500);
-  startUpDisplay();
   startupTime = millis();
   lazyUpdateTime = startupTime;
   lastClientCheckTimeout = startupTime;
@@ -334,8 +355,27 @@ void loop()
   // Update backlight brightness
   adjustBacklightAutomatically();
 
-  // Update display
-  drawData();
+  // Update LVGL dashboard with latest sensor data
+  {
+    DashboardData dashData;
+    dashData.rpm = (int)rpm;
+    dashData.coolant_temp = (float)clt;
+    dashData.oil_pressure = oil_pressure;
+    dashData.tps = (float)tps;
+    dashData.gear = gear;
+    dashData.iat = (float)iat;
+    dashData.map_kpa = (float)mapData;
+    dashData.speed_kmh = (float)vss;
+#if ENABLE_SIMULATOR
+    dashData.simulator_active = (getSimulatorMode() != SIMULATOR_MODE_OFF);
+#else
+    dashData.simulator_active = false;
+#endif
+    dashboard_ui_update(&dashData);
+  }
+
+  // Let LVGL render any changes to the display
+  lvglTaskHandler();
 
   // Handle web server clients with power-saving logic
   // Reduce web server check frequency from every loop to every 10ms

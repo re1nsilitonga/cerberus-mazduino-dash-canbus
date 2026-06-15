@@ -14,6 +14,7 @@ typedef struct DashboardData {
     int   gear;            /* 0=N, 1-6 (CAN 0x3E2 byte0)  */
     float iat;             /* IAT °C  (CAN 0x3E0 byte2-3) */
     float map_kpa;         /* MAP kPa (CAN 0x360 byte2-3) */
+    float speed_kmh;       /* Vehicle speed km/h (derived) */
     bool  simulator_active;
 } DashboardData;
 

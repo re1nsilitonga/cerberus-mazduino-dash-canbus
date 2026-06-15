@@ -41,6 +41,9 @@ add_executable(dashboard_sim
     main.cpp
     mock_data.cpp
     ../ui/dashboard_ui.c
+    ../ui/font_noto_bold_48.c
+    ../ui/font_noto_bold_64.c
+    cerberus_logo_argb.c
 )
 
 # ─── Include paths ────────────────────────────────────────────────────────────
