@@ -34,12 +34,9 @@
 #define LV_DEF_REFR_PERIOD 33   /* ~30 fps, plenty for gauges */
 #define LV_DPI_DEF 130
 
-/* Use millis() for the LVGL tick instead of a tick source */
-#define LV_TICK_CUSTOM 1
-#if LV_TICK_CUSTOM
-    #define LV_TICK_CUSTOM_INCLUDE "Arduino.h"
-    #define LV_TICK_CUSTOM_SYS_TIME_EXPR (millis())
-#endif
+/* Note: LV_TICK_CUSTOM is an LVGL v8 mechanism and has no effect in v9.
+ * The tick source is registered at runtime via lv_tick_set_cb(millis)
+ * in LvglDisplay.cpp. */
 
 /*=====================
  * DRAW CONFIGURATION

@@ -19,6 +19,7 @@
 #include "dashboard_ui.h"
 #include "lvgl.h"
 #include <stdio.h>
+#include <stdbool.h>
 
 /* Custom bold fonts — generated via lv_font_conv from NotoSans-Bold.ttf */
 extern const lv_font_t font_noto_bold_48;
@@ -49,7 +50,7 @@ extern const lv_font_t font_noto_bold_64;
 #define ZONE_RED      15
 
 /* ── Startup sweep ─────────────────────────────────────────────────────────── */
-#define SWEEP_DURATION_MS  3000
+#define SWEEP_DURATION_MS  5000
 
 typedef enum {
     UI_STATE_SWEEP,
@@ -58,6 +59,7 @@ typedef enum {
 
 static ui_state_t g_state = UI_STATE_SWEEP;
 static uint32_t   g_sweep_start;
+static bool       g_sweep_started = false;
 
 /* ── Widget handles ────────────────────────────────────────────────────────── */
 static lv_obj_t *g_seg[N_SEGS];
@@ -220,8 +222,6 @@ void dashboard_ui_init(void)
     lv_obj_set_style_text_font(g_tps_val, &font_noto_bold_48, 0);
     lv_obj_align(g_tps_val, LV_ALIGN_TOP_RIGHT, -10, 274);
 
-    /* ── Startup sweep: gauges animate 0 -> max -> 0 before showing real data ── */
-    g_sweep_start = lv_tick_get();
 }
 
 /* ── dashboard_ui_update ───────────────────────────────────────────────────── */
@@ -230,13 +230,21 @@ void dashboard_ui_update(const DashboardData *d)
     DashboardData sweep_data;
 
     if (g_state == UI_STATE_SWEEP) {
+        /* ── Startup sweep: gauges animate 0 -> max -> 0 before showing real data ── */
+        if (!g_sweep_started) {
+            g_sweep_start = lv_tick_get();
+            g_sweep_started = true;
+        }
         uint32_t elapsed = lv_tick_elaps(g_sweep_start);
         if (elapsed >= SWEEP_DURATION_MS) {
             g_state = UI_STATE_NORMAL;
         } else {
-            /* Triangular sweep: 0 -> max -> 0 across all gauges */
+            /* Triangular sweep: 0 -> max -> 0 across all gauges, eased for a
+             * smoother feel (slow start/end, fast through the middle). */
             float frac = (float)elapsed / (float)SWEEP_DURATION_MS;
-            float t = (frac < 0.5f) ? (frac * 2.0f) : ((1.0f - frac) * 2.0f);
+            float tri  = (frac < 0.5f) ? (frac * 2.0f) : ((1.0f - frac) * 2.0f);
+            /* Smoothstep ease: 3x^2 - 2x^3 */
+            float t = tri * tri * (3.0f - 2.0f * tri);
 
             sweep_data.rpm             = (int)(t * RPM_MAX);
             sweep_data.speed_kmh       = t * 240.0f;

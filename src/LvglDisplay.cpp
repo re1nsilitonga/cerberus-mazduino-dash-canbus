@@ -10,6 +10,11 @@
 static lv_color_t lvglDrawBuf[LVGL_DISPLAY_WIDTH * LVGL_BUF_LINES];
 static lv_display_t *lvglDisplay = nullptr;
 
+static uint32_t lvglTickCb()
+{
+  return (uint32_t)millis();
+}
+
 static void lvglFlushCb(lv_display_t *disp, const lv_area_t *area, uint8_t *pxMap)
 {
   uint32_t w = area->x2 - area->x1 + 1;
@@ -29,6 +34,7 @@ void lvglDisplayInit()
   display.setSwapBytes(true);
 
   lv_init();
+  lv_tick_set_cb(lvglTickCb);
 
   lvglDisplay = lv_display_create(LVGL_DISPLAY_WIDTH, LVGL_DISPLAY_HEIGHT);
   lv_display_set_color_format(lvglDisplay, LV_COLOR_FORMAT_RGB565);
