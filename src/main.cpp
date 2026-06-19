@@ -22,6 +22,9 @@
 #include "Simulator.h"
 #endif
 
+// 7-segment gear indicator
+#include "GearDisplay.h"
+
 // LVGL dashboard UI
 #include "LvglDisplay.h"
 #include "mock_data.h"
@@ -215,6 +218,9 @@ void setup()
   // Initialize backlight control
   setupBacklight();
   
+  // Initialize 7-segment gear indicator
+  gearDisplayInit();
+
   // Initialize display
   setupDisplay();
   display.fillScreen(TFT_BLACK);
@@ -372,6 +378,7 @@ void loop()
     dashData.simulator_active = false;
 #endif
     dashboard_ui_update(&dashData);
+    gearDisplayUpdate(dashData.gear);
   }
 
   // Let LVGL render any changes to the display
