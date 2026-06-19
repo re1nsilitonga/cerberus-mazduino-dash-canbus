@@ -16,7 +16,7 @@ TFT_eSprite spr = TFT_eSprite(&display);
 
 void setupDisplay() {
   display.init();
-  display.setRotation(3);
+  display.setRotation(1);
   // Initialize display configuration
   initializeDisplayConfig();
 }
