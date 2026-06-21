@@ -1,6 +1,6 @@
 #include "GearDisplay.h"
 
-#define SEG_A 13
+#define SEG_A 32
 #define SEG_B 14
 #define SEG_C 21
 #define SEG_D 22
@@ -35,9 +35,6 @@ static const uint8_t font[] = {
     /* 9 */ 0b1101111,
 };
 
-/* N = segments A, B, C, E, F (no middle bar, no bottom bar) */
-static const uint8_t font_N = 0b0110111;
-
 static void writeSegments(uint8_t bits)
 {
     for (int i = 0; i < 7; i++) {
@@ -51,13 +48,12 @@ void gearDisplayInit()
         pinMode(seg_pins[i], OUTPUT);
         digitalWrite(seg_pins[i], LOW);
     }
-    writeSegments(font_N);
+    writeSegments(font[0]);
 }
 
 void gearDisplayUpdate(int gear)
 {
-    if (gear <= 0 || gear > 9)
-        writeSegments(font_N);
-    else
-        writeSegments(font[gear]);
+    if (gear < 0) gear = 0;
+    if (gear > 9) gear = 9;
+    writeSegments(font[gear]);
 }
