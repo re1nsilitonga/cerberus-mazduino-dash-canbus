@@ -259,6 +259,57 @@ void dashboard_ui_update(const DashboardData *d)
         }
     }
 
+#ifdef DEMO_MODE
+    /* ── Demo mode: simulate realistic driving loop after sweep ─────────── */
+    if (g_state == UI_STATE_NORMAL) {
+        static uint32_t demo_start = 0;
+        if (demo_start == 0) demo_start = lv_tick_get();
+
+        /* Gear table: shift RPM, speed range per gear */
+        static const int   N_GEARS       = 6;
+        static const int   RPM_IDLE      = 1200;
+        static const int   RPM_SHIFT     = 15000;
+        static const float SPEED_MAX[]   = { 35, 65, 100, 140, 180, 220 };
+        static const float GEAR_TIME_MS  = 4000.0f;
+        /* Total cycle: accelerate through 6 gears + decelerate back = 2 phases */
+        float total_ms    = N_GEARS * GEAR_TIME_MS * 2.0f;
+        float elapsed_demo = (float)lv_tick_elaps(demo_start);
+        float cycle_pos   = elapsed_demo - total_ms * (int)(elapsed_demo / total_ms);
+
+        float accel_ms = N_GEARS * GEAR_TIME_MS;
+        bool  accel    = (cycle_pos < accel_ms);
+        float phase_t  = accel ? cycle_pos : (accel_ms - (cycle_pos - accel_ms));
+        if (phase_t < 0) phase_t = 0;
+
+        int   gear_idx = (int)(phase_t / GEAR_TIME_MS);
+        if (gear_idx >= N_GEARS) gear_idx = N_GEARS - 1;
+        float in_gear  = (phase_t - gear_idx * GEAR_TIME_MS) / GEAR_TIME_MS;
+        /* Smooth ease within gear */
+        in_gear = in_gear * in_gear * (3.0f - 2.0f * in_gear);
+
+        int   rpm_val    = RPM_IDLE + (int)(in_gear * (RPM_SHIFT - RPM_IDLE));
+        float speed_lo   = (gear_idx > 0) ? SPEED_MAX[gear_idx - 1] : 0.0f;
+        float speed_hi   = SPEED_MAX[gear_idx];
+        float speed_val  = speed_lo + in_gear * (speed_hi - speed_lo);
+
+        /* TPS follows RPM roughly */
+        float tps_val    = 20.0f + in_gear * 70.0f;
+        float map_val    = 30.0f + in_gear * 200.0f;
+        float oil_val    = 150.0f + speed_val * 0.5f;
+
+        sweep_data.rpm             = rpm_val;
+        sweep_data.speed_kmh       = speed_val;
+        sweep_data.coolant_temp    = 85.0f;
+        sweep_data.iat             = 38.0f;
+        sweep_data.oil_pressure    = oil_val;
+        sweep_data.map_kpa         = map_val;
+        sweep_data.tps             = tps_val;
+        sweep_data.gear            = gear_idx + 1;
+        sweep_data.simulator_active = false;
+        d = &sweep_data;
+    }
+#endif
+
     if (!d) return;
 
     /* ── RPM bar ────────────────────────────────────────────────────────── */

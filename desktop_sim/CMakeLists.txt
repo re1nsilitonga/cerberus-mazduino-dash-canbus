@@ -47,6 +47,9 @@ add_executable(dashboard_sim
 )
 
 # ─── Include paths ────────────────────────────────────────────────────────────
+target_compile_definitions(dashboard_sim PRIVATE DEMO_MODE)
+
+# ─── Include paths ────────────────────────────────────────────────────────────
 target_include_directories(dashboard_sim PRIVATE
     ${SDL2_INCLUDE_DIRS}
     ${CMAKE_CURRENT_SOURCE_DIR}          # lv_conf.h, mock_data.h
