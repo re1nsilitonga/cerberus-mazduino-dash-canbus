@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cmake -S . -B build)",
+      "Bash(DISPLAY=:0 timeout 3 ./dashboard_sim)",
+      "Bash(DISPLAY=:0 timeout 4 /home/hp/Documents/cerberus-mazduino-dash-canbus/desktop_sim/dashboard_sim)",
+      "Bash(git -C /home/hp/Documents/cerberus-mazduino-dash-canbus status --short)",
+      "Bash(git -C /home/hp/Documents/cerberus-mazduino-dash-canbus rm -r --cached desktop_sim/build/)",
+      "Bash(git -C /home/hp/Documents/cerberus-mazduino-dash-canbus rm --cached desktop_sim/dashboard_sim)",
+      "Bash(git -C /home/hp/Documents/cerberus-mazduino-dash-canbus rm -rf --cached desktop_sim/build/)",
+      "Bash(git -C /home/hp/Documents/cerberus-mazduino-dash-canbus add LVGL_EDITOR_GUIDE.md ui/)",
+      "Bash(pkg-config --exists sdl2)",
+      "Bash(command -v cmake)",
+      "WebSearch",
+      "WebFetch(domain:lvgl.io)",
+      "WebFetch(domain:docs.lvgl.io)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:viewer.lvgl.io)",
+      "Bash(ls ~/Downloads/LVGL_Pro_Editor-1.2.0-linux/ && uname -m)",
+      "Read(//home/hp/Downloads/LVGL_Pro_Editor-1.2.0-linux/**)",
+      "Bash(chmod +x ~/Downloads/LVGL_Pro_Editor-1.2.0-linux/lvgl-editor-1.2.0-x86_64.AppImage)",
+      "Bash(ldconfig -p)",
+      "Bash(dpkg -l libfuse2)",
+      "Bash(dpkg -l libfuse3)",
+      "Bash(lsb_release -rs)",
+      "Bash(sudo apt install -y libfuse2)",
+      "Bash(find /usr/share/fonts -name \"*Montserrat*Bold*\" -o -name \"*montserrat*bold*\" 2>/dev/null | head -5; find /usr/share/fonts -name \"*NotoSans*Bold*\" 2>/dev/null | head -5)",
+      "Read(//usr/share/fonts/**)"
+    ]
+  }
+}

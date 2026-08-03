@@ -1,6 +1,6 @@
 #include "GearDisplay.h"
 
-#define SEG_A 32
+#define SEG_A 13
 #define SEG_B 14
 #define SEG_C 21
 #define SEG_D 22
