@@ -64,6 +64,8 @@ static bool       g_sweep_started = false;
 /* Physical 7-segment gear indicator, driven in lockstep with the sweep so the
  * intro animation and the gear LED finish together (see GearDisplay.cpp). */
 extern void gearDisplayUpdate(int gear);
+/* WS2812B RPM strip, mirrors the on-screen RPM bar (see WS2812Control.cpp). */
+extern void ws2812Update(int rpm, int rpmMax);
 
 /* ── Widget handles ────────────────────────────────────────────────────────── */
 static lv_obj_t *g_seg[N_SEGS];
@@ -316,9 +318,10 @@ void dashboard_ui_update(const DashboardData *d)
 
     if (!d) return;
 
-    /* Physical 7-segment gear indicator - single call site so it always
-     * reflects whatever `d` currently is (intro sweep or real data). */
+    /* Physical 7-segment gear indicator and WS2812B strip - single call site
+     * so both always reflect whatever `d` currently is (intro sweep or real data). */
     gearDisplayUpdate(d->gear);
+    ws2812Update(d->rpm, RPM_MAX);
 
     /* ── RPM bar ────────────────────────────────────────────────────────── */
     int active = (d->rpm * N_SEGS) / RPM_MAX;

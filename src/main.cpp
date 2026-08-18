@@ -25,6 +25,9 @@
 // 7-segment gear indicator
 #include "GearDisplay.h"
 
+// WS2812B RPM strip
+#include "WS2812Control.h"
+
 // LVGL dashboard UI
 #include "LvglDisplay.h"
 #include "mock_data.h"
@@ -227,6 +230,10 @@ void setup()
   // Initialize 7-segment gear indicator
   gearDisplayInit();
   Serial.println("[BOOT] gear ok");
+
+  // Initialize WS2812B RPM strip
+  ws2812Init();
+  Serial.println("[BOOT] ws2812 ok");
 
   // Initialize display
   setupDisplay();
