@@ -213,17 +213,26 @@ void printDebugInfo()
 
 void setup()
 {
+  Serial.begin(UART_BAUD);
+  delay(200);
+  Serial.println("[BOOT] start");
+
   EEPROM.begin(EEPROM_SIZE);
-  
+  Serial.println("[BOOT] EEPROM ok");
+
   // Initialize backlight control
   setupBacklight();
-  
+  Serial.println("[BOOT] backlight ok");
+
   // Initialize 7-segment gear indicator
   gearDisplayInit();
+  Serial.println("[BOOT] gear ok");
 
   // Initialize display
   setupDisplay();
+  Serial.println("[BOOT] display.init ok");
   display.fillScreen(TFT_BLACK);
+  Serial.println("[BOOT] fillScreen ok");
 
   // ── Splash screen: yellow background + Cerberus logo centered ──────────────
   {
@@ -236,13 +245,15 @@ void setup()
     display.setSwapBytes(false); // Restore default before LVGL takes over
     delay(2000);
   }
+  Serial.println("[BOOT] splash ok");
   display.fillScreen(TFT_BLACK);
 
   // Initialize LVGL dashboard UI
   lvglDisplayInit();
+  Serial.println("[BOOT] lvglDisplayInit ok");
   dashboard_ui_init();
-  
-  Serial.begin(UART_BAUD);
+  Serial.println("[BOOT] dashboard_ui_init ok");
+
   commMode = EEPROM.read(1);
   
   // If EEPROM is uninitialized (0xFF), set default to CAN mode
@@ -258,15 +269,23 @@ void setup()
   // Synchronize isCANMode with commMode
   isCANMode = (commMode == COMM_CAN);
   
+#ifndef ENABLE_CAN
+#define ENABLE_CAN 1
+#endif
+
   if (commMode == COMM_CAN)
   {
+#if ENABLE_CAN
     // Initialize CAN communication
     setupCAN();
-    
+
     // Create CAN task on core 0
     xTaskCreatePinnedToCore(canTask, "CAN Task", 4096, NULL, 1, NULL, 0);
-    
+
     Serial.println("CAN mode aktif.");
+#else
+    Serial.println("CAN mode diminta tapi ENABLE_CAN=0 (modul CAN belum terpasang) - dilewati.");
+#endif
   }
   else
   {

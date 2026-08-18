@@ -14,7 +14,9 @@ extern const char *password;
 #define TXD 25  // Changed from 17 to avoid conflict with CAN RX
 
 // Backlight control
+#ifndef BACKLIGHT_PIN
 #define BACKLIGHT_PIN 32
+#endif
 #define BACKLIGHT_CHANNEL 0
 #define BACKLIGHT_FREQ 5000
 #define BACKLIGHT_RESOLUTION 8
