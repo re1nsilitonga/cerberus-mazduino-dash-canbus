@@ -61,6 +61,10 @@ static ui_state_t g_state = UI_STATE_SWEEP;
 static uint32_t   g_sweep_start;
 static bool       g_sweep_started = false;
 
+/* Physical 7-segment gear indicator, driven in lockstep with the sweep so the
+ * intro animation and the gear LED finish together (see GearDisplay.cpp). */
+extern void gearDisplayUpdate(int gear);
+
 /* ── Widget handles ────────────────────────────────────────────────────────── */
 static lv_obj_t *g_seg[N_SEGS];
 static lv_obj_t *g_rpm_val;
@@ -253,7 +257,7 @@ void dashboard_ui_update(const DashboardData *d)
             sweep_data.oil_pressure    = t * 300.0f;
             sweep_data.map_kpa         = t * 300.0f;
             sweep_data.tps             = t * 100.0f;
-            sweep_data.gear            = 0;
+            sweep_data.gear            = (int)(t * 6.0f + 0.5f);
             sweep_data.simulator_active = false;
             d = &sweep_data;
         }
@@ -311,6 +315,10 @@ void dashboard_ui_update(const DashboardData *d)
 #endif
 
     if (!d) return;
+
+    /* Physical 7-segment gear indicator - single call site so it always
+     * reflects whatever `d` currently is (intro sweep or real data). */
+    gearDisplayUpdate(d->gear);
 
     /* ── RPM bar ────────────────────────────────────────────────────────── */
     int active = (d->rpm * N_SEGS) / RPM_MAX;

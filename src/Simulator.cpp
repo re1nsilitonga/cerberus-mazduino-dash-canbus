@@ -7,6 +7,7 @@ static uint8_t simulatorMode = SIMULATOR_MODE_OFF;
 static uint32_t lastSimUpdate = 0;
 static uint32_t simulatorStep = 0;
 static bool rpmIncreasing = true;
+static bool bootDemoOneShot = false;
 
 void initializeSimulator() {
   simulatorMode = SIMULATOR_MODE_OFF;
@@ -41,6 +42,7 @@ void setSimulatorMode(uint8_t mode) {
     case SIMULATOR_MODE_OFF:
       Serial.println("[SIM] Simulator OFF - Using real data");
       rpm = 0; // Reset to 0 when turning off
+      gear = 0;
       break;
     case SIMULATOR_MODE_RPM_SWEEP:
       Serial.println("[SIM] RPM SWEEP Mode - 0 to 6000 RPM");
@@ -70,6 +72,11 @@ uint8_t getSimulatorMode() {
   return simulatorMode;
 }
 
+void startBootDemoSweep() {
+  setSimulatorMode(SIMULATOR_MODE_RPM_SWEEP);
+  bootDemoOneShot = true;
+}
+
 void updateSimulatorData() {
   if (simulatorMode == SIMULATOR_MODE_OFF) {
     return; // Don't override real data
@@ -96,8 +103,14 @@ void updateSimulatorData() {
       } else {
         rpm = simulatorStep * 50; // Decrease by 50 RPM each step
         if (rpm <= 0) {
-          rpmIncreasing = true;
-          simulatorStep = 0;
+          if (bootDemoOneShot) {
+            // One sweep cycle done - end boot demo, go idle
+            bootDemoOneShot = false;
+            setSimulatorMode(SIMULATOR_MODE_OFF);
+          } else {
+            rpmIncreasing = true;
+            simulatorStep = 0;
+          }
         } else {
           simulatorStep--;
         }
@@ -123,6 +136,11 @@ void updateSimulatorData() {
       break;
   }
   
+  // Gear follows RPM during the sweep demo (0 at 0 RPM, up to 6 at max RPM)
+  if (simulatorMode == SIMULATOR_MODE_RPM_SWEEP) {
+    gear = constrain((int)(rpm / 1000), 0, 6);
+  }
+
   // Generate correlated sensor data based on RPM
   if (rpm == 0) {
     // Engine off

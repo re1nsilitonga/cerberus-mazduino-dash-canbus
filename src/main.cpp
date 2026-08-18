@@ -397,7 +397,6 @@ void loop()
     dashData.simulator_active = false;
 #endif
     dashboard_ui_update(&dashData);
-    gearDisplayUpdate(dashData.gear);
   }
 
   // Let LVGL render any changes to the display

@@ -16,4 +16,8 @@ void updateSimulatorData();
 void setSimulatorMode(uint8_t mode);
 uint8_t getSimulatorMode();
 
+// Runs one RPM_SWEEP cycle (0 -> max -> 0) then auto-switches to OFF.
+// Used as the post-splash boot demo animation.
+void startBootDemoSweep();
+
 #endif // SIMULATOR_H
